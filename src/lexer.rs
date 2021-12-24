@@ -100,6 +100,7 @@ impl Iterator for Lexer {
                     }
                     'a'..='z' => return self.parse_identifier(),
                     '"' => return self.parse_literal(),
+                    '+' => return Some(Token::Operation(Operation::Plus)),
 
                     _ => return None,
                 }
@@ -117,6 +118,11 @@ pub enum Keyword {
 }
 
 #[derive(PartialEq, Debug)]
+pub enum Operation {
+    Plus,
+}
+
+#[derive(PartialEq, Debug)]
 pub enum Token {
     Integer(usize),
     Identifier(String),
@@ -124,7 +130,7 @@ pub enum Token {
     Literal(String),
     Lparen,
     Rparen,
-    Defun,
+    Operation(Operation),
 }
 
 #[cfg(test)]
@@ -171,5 +177,11 @@ mod tests {
         assert_eq!(lexer.next().unwrap(), Token::Keyword(Keyword::Print));
         assert_eq!(lexer.next().unwrap(), Token::Identifier("name".to_string()));
         assert_eq!(lexer.next().unwrap(), Token::Rparen);
+
+        // (print (+ marks))
+        assert_eq!(lexer.next().unwrap(), Token::Lparen);
+        assert_eq!(lexer.next().unwrap(), Token::Keyword(Keyword::Print));
+        assert_eq!(lexer.next().unwrap(), Token::Lparen);
+        assert_eq!(lexer.next().unwrap(), Token::Operation(Operation::Plus));
     }
 }
