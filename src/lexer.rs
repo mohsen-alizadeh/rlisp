@@ -100,7 +100,10 @@ impl Iterator for Lexer {
                     }
                     'a'..='z' => return self.parse_identifier(),
                     '"' => return self.parse_literal(),
-                    '+' => return Some(Token::Operation(Operation::Plus)),
+                    '+' => {
+                        self.position += 1;
+                        return Some(Token::Operation(Operation::Plus));
+                    }
 
                     _ => return None,
                 }
@@ -183,5 +186,11 @@ mod tests {
         assert_eq!(lexer.next().unwrap(), Token::Keyword(Keyword::Print));
         assert_eq!(lexer.next().unwrap(), Token::Lparen);
         assert_eq!(lexer.next().unwrap(), Token::Operation(Operation::Plus));
+        assert_eq!(
+            lexer.next().unwrap(),
+            Token::Identifier("marks".to_string())
+        );
+        assert_eq!(lexer.next().unwrap(), Token::Rparen);
+        assert_eq!(lexer.next().unwrap(), Token::Rparen);
     }
 }
