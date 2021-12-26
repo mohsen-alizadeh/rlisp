@@ -1,12 +1,18 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
+#[macro_use]
+extern crate lazy_static;
+
 mod lexer;
 mod node;
 mod parser;
+mod vm;
 
 use lexer::Lexer;
 use parser::Parser;
+
+use vm::VM;
 
 fn main() {
     let input = r#"
@@ -19,11 +25,11 @@ fn main() {
             (print (+ marks))
         "#;
 
-    let mut lexer = Lexer::new(input.to_string());
+    let lexer = Lexer::new(input.to_string());
 
     let mut parser = Parser::new(lexer);
 
-    let ast = parser.parse();
+    parser.parse().unwrap();
 
-    println!("going to evaluate stuff");
+    VM::new(parser.exprs).run();
 }

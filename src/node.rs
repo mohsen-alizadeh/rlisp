@@ -1,73 +1,43 @@
 // Block           => Expr Expr | Expr
-// Expr            => Args | Call
-// List            => ( Args )
-// Call            => ( FuncName Args )
+// Expr            => List | Call
+// List            => ( Value )
+// Call            => ( FuncName Value )
 // FuncName        => + | print | let
-// Args            => Arg Arg | Arg
-// Arg             => Identifier | Number | Expr
+// Value           => Value Value | Value
 
-#[derive(Debug)]
-pub enum Node {
-    Block(Block),
-    Expr,
-    Call,
-    Number(Number),
-    Identifier(Identifier),
-}
-
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Block {
-    value: Vec<Expr>,
+    epxrs: Vec<Expr>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Expr {
     List(List),
     Call(Call),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Call {
     pub func_name: FuncName,
-    pub args: Args,
+    pub args: Vec<Value>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum FuncName {
     Plus,
     Print,
     Let,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct List {
-    pub value: Vec<Arg>,
+    pub value: Vec<Value>,
 }
 
-#[derive(Debug)]
-pub struct Args {
-    pub value: Vec<Arg>,
-}
-
-#[derive(Debug)]
-pub enum Arg {
-    Identifier(Identifier),
-    Number(Number),
-    Literal(Literal),
+#[derive(Debug, Clone)]
+pub enum Value {
+    Identifier(String),
+    Number(usize),
+    Literal(String),
     Expr(Expr),
-}
-
-#[derive(Debug)]
-pub struct Identifier {
-    pub value: String,
-}
-
-#[derive(Debug)]
-pub struct Literal {
-    pub value: String,
-}
-
-#[derive(Debug)]
-pub struct Number {
-    pub value: usize,
 }
