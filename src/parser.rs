@@ -101,7 +101,7 @@ impl Parser {
     }
 
     fn parse_list(&mut self) -> Result<node::Expr, &'static str> {
-        let mut list = node::List { value: Vec::new() };
+        let mut list: Vec<node::Value> = Vec::new();
 
         while let Some(token) = self.lexer.peek() {
             if *token == Token::Rparen {
@@ -110,7 +110,7 @@ impl Parser {
             }
 
             match self.parse_arg() {
-                Ok(arg) => list.value.push(arg),
+                Ok(arg) => list.push(arg),
                 Err(e) => return Err(e),
             }
         }

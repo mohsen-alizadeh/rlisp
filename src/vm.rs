@@ -4,12 +4,12 @@ use std::collections::HashMap;
 use std::sync::Mutex;
 
 lazy_static! {
-    static ref VARIABLES: Mutex<HashMap<String, node::Arg>> = Mutex::new(HashMap::new());
+    static ref VARIABLES: Mutex<HashMap<String, node::Value>> = Mutex::new(HashMap::new());
 }
 
 pub struct VM<'a> {
     pub ast: Vec<node::Expr>,
-    pub variables: HashMap<String, &'a node::Arg>,
+    pub variables: HashMap<String, &'a node::Value>,
 }
 
 impl<'a> VM<'_> {
@@ -24,91 +24,84 @@ impl<'a> VM<'_> {
         for expr in &self.ast {
             expr.run();
         }
-
-        // for i in 0..=self.ast.len() {
-        //     self.run_expr(&self.ast[0]);
-        // }
-
-        // for i in 0..=self.ast.len() {
-        //
-        //     // println!("expr");
-        //     // // self.run_test();
-        //     // self.run_expr(&self.ast[0]);
-        // }
-        println!("VARIABLES: {:?}", VARIABLES.lock().unwrap());
     }
-
-    // pub fn run_test(&mut self) {
-    //
-    // fn run_expr(&'a mut self, expr: &'a node::Expr) {
-    //     match expr {
-    //         node::Expr::Call(call) => self.run_call(call),
-    //         _ => (),
-    //     }
-    // }
-    //
-    // fn run_call(&'a mut self, call: &'a node::Call) {
-    //     match call.func_name {
-    //         node::FuncName::Let => {
-    //             if let node::Arg::Identifier(name) = call.args.value.get(0).unwrap() {
-    //                 let value = call.args.value.get(1).unwrap();
-    //                 // self.variables.insert(name.value, value.clone());
-    //             } else {
-    //                 println!("error on arg");
-    //             }
-    //         }
-    //         _ => (),
-    //     }
-    // }
 }
 
 trait Run {
-    fn run(&self) {
-        println!("run trait");
+    fn run(&self) -> Option<node::Value> {
+        None
     }
 }
 
 impl Run for node::Expr {
-    fn run(&self) {
+    fn run(&self) -> Option<node::Value> {
         match self {
             node::Expr::Call(call) => call.run(),
-            _ => (),
+            node::Expr::List(list) => Some(node::Value::List(list.to_vec())),
         }
     }
 }
 
 impl Run for node::Call {
-    fn run(&self) {
+    fn run(&self) -> Option<node::Value> {
         match self.func_name {
             node::FuncName::Let => {
-                if let node::Arg::Identifier(name) = self.args.value.get(0).unwrap() {
+                if let node::Value::Identifier(name) = self.args.get(0).unwrap() {
                     VARIABLES
                         .lock()
                         .unwrap()
-                        .insert(name.value.clone(), self.args.value.get(1).unwrap().clone());
+                        .insert(name.clone(), self.args.get(1).unwrap().clone());
                 } else {
                     println!("failed in call.run");
                 }
+
+                None
             }
             node::FuncName::Plus => {
-                println!("plus")
-                let sum: usize = 0;
+                let mut sum: usize = 0;
 
-                for arg in &self.args.value {
-                    match value {
-
-                    }
+                for arg in &self.args {
+                    sum += arg.sum();
                 }
+
+                Some(node::Value::Number(sum))
             }
-            _ => (),
+            node::FuncName::Print => {
+                for arg in &self.args {
+                    println!("{}", arg.to_s());
+                }
+
+                None
+            }
         }
     }
 }
 
+impl node::Value {
+    fn to_s(&self) -> String {
+        match self {
+            node::Value::Identifier(name) => VARIABLES.lock().unwrap().get(name).unwrap().to_s(),
+            node::Value::Number(number) => number.to_string(),
+            node::Value::Literal(string) => string.clone(),
+            node::Value::Expr(expr) => expr.run().unwrap().to_s(),
+            _ => String::from("to_s is called"),
+        }
+    }
 
+    fn sum(&self) -> usize {
+        match self {
+            node::Value::Identifier(name) => VARIABLES.lock().unwrap().get(name).unwrap().sum(),
+            node::Value::Number(number) => *number,
+            node::Value::Expr(expr) => expr.run().unwrap().sum(),
+            node::Value::List(list) => {
+                let mut s = 0;
+                for i in list {
+                    s += i.sum();
+                }
 
-// impl Run {
-//     fn run() {
-//
-//     }
-// }
+                s
+            }
+            _ => 0,
+        }
+    }
+}
